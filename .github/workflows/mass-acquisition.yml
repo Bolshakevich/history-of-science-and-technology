@@ -50,7 +50,8 @@ jobs:
       - name: Поиск по домену ${{ matrix.domain }} (метаданные)
         # Только метаданные: байты никогда не загружаются в CI и не коммитятся.
         env:
-          OPENALEX_MAILTO: ${{ secrets.OPENALEX_MAILTO }}
+          # Контактный email для вежливого пула OpenAlex (не секрет, repo variable).
+          OPENALEX_MAILTO: ${{ vars.OPENALEX_MAILTO }}
         run: |
           DOMAIN="${{ github.event.inputs.domain || matrix.domain }}"
           SERVICES="${{ github.event.inputs.services || 'openalex,arxiv,crossref,ntrs,internet_archive' }}"
