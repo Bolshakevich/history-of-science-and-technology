@@ -7,6 +7,11 @@ name: Массовый сбор первоисточников
 on:
   schedule:
     - cron: '0 3 * * 1'   # каждый понедельник, 03:00 UTC
+  pull_request:
+    paths:
+      - 'physics-dataset-competition/scripts/acquire_batch.py'
+      - 'physics-dataset-competition/src/physics_ds/collection/**'
+      - '.github/workflows/mass-acquisition.yml'
   workflow_dispatch:
     inputs:
       domain:
