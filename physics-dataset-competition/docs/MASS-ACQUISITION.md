@@ -50,3 +50,28 @@ python scripts/acquire_batch.py mass \
 Workflow `.github/workflows/mass-acquisition.yml` по расписанию собирает
 метаданные по всем доменам (без загрузки байтов), проверяет отсутствие токенов
 и выгружает манифесты как артефакты.
+
+## Secrets и переменные окружения
+
+| Имя | Тип | Назначение |
+|---|---|---|
+| `OPENALEX_MAILTO` | repo **variable** | Контактный email для вежливого пула OpenAlex (не секрет) |
+| `HF_TOKEN` | repo **secret** | Публикация датасета на Hugging Face (уже настроен) |
+| `CROSSREF_MAILTO` | repo variable (опц.) | Контактный email для Crossref polite pool |
+
+Установка (без вывода значения в лог):
+
+```bash
+gh variable set OPENALEX_MAILTO --repo visualcomments/history-of-science-and-technology --body "you@example.org"
+gh secret set HF_TOKEN --repo visualcomments/history-of-science-and-technology
+```
+
+Локальный запуск (токены — только из окружения, не из файлов):
+
+```bash
+export OPENALEX_MAILTO="you@example.org"
+python physics-dataset-competition/scripts/acquire_batch.py mass --domain AERO \
+    --services openalex,ntrs,internet_archive --limit 10 \
+    --out-manifest .local/physics-bronze/candidates-AERO.jsonl --fetch
+```
+
