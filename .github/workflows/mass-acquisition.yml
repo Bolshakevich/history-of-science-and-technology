@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: 2026 history-of-science-and-technology contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Массовый сбор первоисточников
+
+# По расписанию — еженедельное пополнение манифеста кандидатов только метаданными
+# (без загрузки байтов в CI). Ручной запуск — workflow_dispatch с параметрами.
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # каждый понедельник, 03:00 UTC
+  pull_request:
+    paths:
+      - 'physics-dataset-competition/scripts/acquire_batch.py'
+      - 'physics-dataset-competition/src/physics_ds/collection/**'
+      - '.github/workflows/mass-acquisition.yml'
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: 'Домен датасета'
+        required: true
+        default: 'AERO'
+        type: choice
+        options: [AERO, STR, RADAR, CTRL]
+      services:
+        description: 'Сервисы через запятую'
+        required: true
+        default: 'openalex,arxiv,crossref,ntrs,internet_archive'
+        type: string
+      limit:
+        description: 'Кандидатов на тему/сервис'
+        required: true
+        default: '10'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    name: Поиск метаданных (metadata-only)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: [AERO, STR, RADAR, CTRL]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Каталог тем поиска
+        run: python physics-dataset-competition/scripts/acquire_batch.py topics
+
+      - name: Поиск по домену ${{ matrix.domain }} (метаданные)
+        # Только метаданные: байты никогда не загружаются в CI и не коммитятся.
+        env:
+          # Контактный email для вежливого пула OpenAlex (не секрет, repo variable).
+          OPENALEX_MAILTO: ${{ vars.OPENALEX_MAILTO }}
+        run: |
+          DOMAIN="${{ github.event.inputs.domain || matrix.domain }}"
+          SERVICES="${{ github.event.inputs.services || 'openalex,arxiv,crossref,ntrs,internet_archive' }}"
+          LIMIT="${{ github.event.inputs.limit || '10' }}"
+          python physics-dataset-competition/scripts/acquire_batch.py mass \
+            --domain "$DOMAIN" \
+            --services "$SERVICES" \
+            --limit "$LIMIT" \
+            --out-manifest ".local/manifests/candidates-${{ matrix.domain }}.jsonl"
+
+      - name: Проверить, что в манифесте нет токенов/секретов
+        run: |
+          set -e
+          if grep -rIE '(hf_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{20,})' \
+               .local/manifests/ 2>/dev/null; then
+            echo "Найден секрет в манифесте — публикация запрещена"; exit 1
+          fi
+
+      - name: Выгрузить манифест как артефакт (не в git)
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
+        with:
+          name: candidates-${{ matrix.domain }}
+          path: .local/manifests/candidates-${{ matrix.domain }}.jsonl
+          if-no-files-found: warn
+          retention-days: 14

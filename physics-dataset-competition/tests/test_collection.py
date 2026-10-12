@@ -16,7 +16,15 @@ SRC = MODULE_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from physics_ds.collection import arxiv, crossref, manifest, openalex  # noqa: E402
+from physics_ds.collection import (  # noqa: E402
+    arxiv,
+    crossref,
+    http,
+    internet_archive,
+    manifest,
+    ntrs,
+    openalex,
+)
 from physics_ds.collection.download import (  # noqa: E402
     FetchOutcome,
     fetch_candidate,
@@ -216,3 +224,81 @@ def test_fetch_manifest_writer(tmp_path: Path) -> None:
     )
     assert n == 1
     assert json.loads(path.read_text(encoding="utf-8"))["status"] == "skipped"
+
+
+# --- internet_archive --------------------------------------------------------
+
+
+def test_internet_archive_normalizes_doc() -> None:
+    payload = json.loads(
+        (FIXTURES / "internet_archive_search.json").read_text(encoding="utf-8")
+    )
+    doc = payload["response"]["docs"][0]
+    cand = internet_archive.normalize_doc(doc, domain="AERO", query="mechanics")
+    assert cand["service"] == "internet_archive"
+    assert cand["service_id"] == "naturalphilosophy00hers"
+    assert cand["year"] == 1831
+    assert cand["license"] == "public-domain"
+    assert cand["copyright_status"] == "public-domain"
+    assert cand["oa_url"].endswith("naturalphilosophy00hers_djvu.txt")
+
+
+def test_internet_archive_maps_cc0() -> None:
+    payload = json.loads(
+        (FIXTURES / "internet_archive_search.json").read_text(encoding="utf-8")
+    )
+    doc = payload["response"]["docs"][1]
+    cand = internet_archive.normalize_doc(doc, domain="AERO", query="aerodynamik")
+    assert cand["license"] == "cc0"
+    assert cand["year"] == 1921
+
+
+# --- ntrs --------------------------------------------------------------------
+
+
+def test_ntrs_normalizes_public_report() -> None:
+    payload = json.loads((FIXTURES / "ntrs_search.json").read_text(encoding="utf-8"))
+    item = payload["results"][0]
+    cand = ntrs.normalize_item(item, domain="AERO", query="airfoil")
+    assert cand["service"] == "ntrs"
+    assert cand["service_id"] == "19630011950"
+    assert cand["license"] == "public-domain"
+    assert cand["copyright_status"] == "public-domain"
+    assert cand["oa_url"].endswith("19630011950.txt")
+    assert cand["authors"] == ["M F Platzer"]
+    assert cand["abstract"].startswith("Chordwise pressure")
+
+
+def test_ntrs_skips_non_public_distribution(monkeypatch) -> None:
+    payload = json.loads((FIXTURES / "ntrs_search.json").read_text(encoding="utf-8"))
+
+    def fake_post(url, data, **kwargs):  # noqa: ARG001
+        return json.dumps(payload).encode("utf-8")
+
+    monkeypatch.setattr(ntrs, "_post", fake_post)
+    rows = ntrs.search("airfoil", domain="AERO", limit=10)
+    # Из двух записей остаётся только PUBLIC.
+    assert len(rows) == 1
+    assert rows[0]["service_id"] == "19630011950"
+
+
+# --- http retry --------------------------------------------------------------
+
+
+def test_retry_delay_returns_seconds_without_sleeping() -> None:
+    """Регрессия: _retry_delay возвращает число секунд и НЕ вызывает sleep сам."""
+
+    class _Resp:
+        headers: dict[str, str] = {}
+
+    calls: list[float] = []
+
+    def fake_sleep(seconds: float) -> None:  # noqa: ARG001
+        calls.append(seconds)
+
+    delay = http._retry_delay(
+        _Resp(), attempt=0, max_retry_after=30.0, sleep=fake_sleep
+    )
+    assert isinstance(delay, float)
+    assert delay == 1.0  # 2**0
+    assert calls == []  # задержка только вычислена, не применена
