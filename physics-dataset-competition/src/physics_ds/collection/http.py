@@ -102,16 +102,21 @@ def get(
 
 
 def _retry_delay(resp: Any, attempt: int, max_retry_after: float, sleep: Any) -> float:
+    """Вычислить задержку до повтора (в секундах), НЕ выполняя ожидание.
+
+    ``sleep`` сохранён в сигнатуре для обратной совместимости вызовов, но
+    сама задержка применяется вызывающим кодом через ``_sleep(...)``.
+    """
     retry_after = None
     headers = getattr(resp, "headers", None)
     if headers is not None:
         retry_after = headers.get("Retry-After")
     if retry_after:
         try:
-            return sleep(min(float(retry_after), max_retry_after))
+            return min(float(retry_after), max_retry_after)
         except ValueError:
             pass
-    return sleep(min(2.0**attempt, max_retry_after))
+    return min(2.0**attempt, max_retry_after)
 
 
 def _redact(url: str) -> str:

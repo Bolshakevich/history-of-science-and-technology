@@ -293,6 +293,10 @@ def build_spec_from_row(
         source.setdefault("source_type", "article")
     if row.get("authors"):
         source["authors"] = row["authors"]
+    if _safe_str(row.get("abstract")):
+        source["abstract"] = row["abstract"]
+    if _safe_str(row.get("abstract_ru")):
+        source["abstract_ru"] = row["abstract_ru"]
 
     spec: dict[str, Any] = {
         "domain": domain,

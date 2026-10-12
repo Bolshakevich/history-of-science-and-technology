@@ -1,0 +1,32 @@
+{
+  "response": {
+    "numFound": 2,
+    "start": 0,
+    "docs": [
+      {
+        "identifier": "naturalphilosophy00hers",
+        "title": "A Discourse on the Study of Natural Philosophy",
+        "creator": "Herschel, John F. W.",
+        "year": "1831",
+        "date": "1831-01-01",
+        "language": "eng",
+        "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/",
+        "rights": "No known copyright",
+        "mediatype": "texts",
+        "collection": ["americana"]
+      },
+      {
+        "identifier": "aerodynamicstheo00fuch",
+        "title": "Aerodynamik. I. Teil",
+        "creator": "Fuchs, Richard",
+        "year": "1921",
+        "date": "1921-01-01",
+        "language": "ger",
+        "licenseurl": "http://creativecommons.org/publicdomain/zero/1.0/",
+        "rights": "CC0",
+        "mediatype": "texts",
+        "collection": ["opensource"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "stats": {"took": 12, "total": 21031, "estimate": false},
+  "results": [
+    {
+      "id": "19630011950",
+      "title": "Comparison of Flight Measured Helicopter Rotor Blade Chordwise Pressure Distributions",
+      "distribution": "PUBLIC",
+      "distributionDate": "1996-02-12T05:00:00.0000000+00:00",
+      "abstract": "Chordwise pressure distributions measured in flight are compared with two-dimensional airfoil characteristics.",
+      "authorAffiliations": [
+        {"meta": {"author": {"name": "M F Platzer"}}}
+      ],
+      "downloads": [
+        {
+          "mimetype": "application/pdf",
+          "name": "19630011950.pdf",
+          "links": {
+            "original": "/api/citations/19630011950/downloads/19630011950.pdf",
+            "pdf": "/api/citations/19630011950/downloads/19630011950.pdf",
+            "fulltext": "/api/citations/19630011950/downloads/19630011950.txt"
+          }
+        }
+      ]
+    },
+    {
+      "id": "19930081482",
+      "title": "Restricted Report Not For Public Release",
+      "distribution": "RESTRICTED",
+      "distributionDate": "2001-05-01T05:00:00.0000000+00:00"
+    }
+  ]
+}

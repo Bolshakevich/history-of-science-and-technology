@@ -55,6 +55,8 @@ _SOURCE_FIELDS = (
     "doi",
     "license",
     "archive_location",
+    "abstract",
+    "abstract_ru",
 )
 
 

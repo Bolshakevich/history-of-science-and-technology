@@ -23,7 +23,9 @@
         "doi": {"type": "string"},
         "license": {"type": "string", "description": "SPDX id или 'metadata-only'"},
         "copyright_status": {"enum": ["public-domain", "cc-by", "cc-by-sa", "cc0", "permission-granted", "metadata-only", "unknown"]},
-        "archive_location": {"type": "string"}
+        "archive_location": {"type": "string"},
+        "abstract": {"type": "string", "description": "Оригинальная аннотация/abstract источника (если есть в источнике)"},
+        "abstract_ru": {"type": "string", "description": "Перевод аннотации на русский язык (если аннотация есть в источнике)"}
       }
     },
     "rights": {

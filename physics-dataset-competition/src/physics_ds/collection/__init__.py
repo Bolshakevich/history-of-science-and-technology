@@ -15,6 +15,24 @@
 (рекомендуется ``.local/physics-bronze/``, вне git) и сопровождаются sha256.
 """
 
-from . import arxiv, crossref, download, http, manifest, openalex
+from . import (
+    arxiv,
+    crossref,
+    download,
+    http,
+    internet_archive,
+    manifest,
+    ntrs,
+    openalex,
+)
 
-__all__ = ["arxiv", "crossref", "download", "http", "manifest", "openalex"]
+__all__ = [
+    "arxiv",
+    "crossref",
+    "download",
+    "http",
+    "internet_archive",
+    "manifest",
+    "ntrs",
+    "openalex",
+]
